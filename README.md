@@ -1,19 +1,19 @@
 # Black-Scholes vs. Real Market Data: A DUOL Case Study
 
 A worked example of pricing real Duolingo (DUOL) options with a
-from-scratch Black-Scholes model — including the data problems
+from-scratch Black-Scholes model, including the data problems
 encountered and what they revealed about the model's real-world limits.
 
 ## Why This Exists
 
 Building Black-Scholes from scratch is a common portfolio project, but
-the formula alone doesn't prove much — anyone can transcribe five lines
-of math from a textbook. The more interesting question is whether the
-model's assumptions actually hold up against real, live market prices.
+programming the formula alone doesn't prove much. The more interesting 
+question is whether themodel's assumptions actually hold up against real, 
+live market prices.
 
 This case study pulls a real options chain for Duolingo (DUOL), prices
-it with the model, and documents where the model matches the market —
-and, just as importantly, where and why it doesn't.
+it with the model, documenting where the model matches the market, and, 
+just as importantly, where and why it doesn't.
 
 ## Data Pipeline
 
@@ -27,7 +27,7 @@ expiry = ticker.options[0]
 chain = ticker.option_chain(expiry).calls
 ```
 
-Raw option chains are noisy — many strikes have stale quotes from
+Raw option chains are noisy , with many strikes have stale quotes from
 trades that happened days or weeks ago, which produces nonsensical
 implied volatilities (over 300%, or near 0%). These strikes are
 filtered out by requiring real, recent trading activity:
@@ -51,12 +51,12 @@ willing to trade at *right now*.
 
 The first pass at comparing model prices to market prices produced
 model prices roughly 60-80% *below* the real market price, across
-every strike. That gap wasn't random noise — it grew systematically
+every strike. That gap wasn't random noise, it grew systematically
 larger the further a strike sat from the current stock price, which is
 the signature of a wrong *input*, not a wrong formula.
 
 **Diagnosis:** rather than guess, the days-to-expiration was solved for
-directly — using one clean, liquid data point (strike 125, the
+directly using one clean, liquid data point (strike 125, the
 near-the-money option) and finding what `T` would make the model's
 price match the market's actual price:
 
@@ -95,7 +95,7 @@ source's default ordering.
 ## Finding: The Volatility Skew
 
 With the corrected expiry, pricing each strike using the market's own
-implied volatility trivially reproduces the market price — that's
+implied volatility trivially reproduces the market price. This is 
 circular, since implied volatility is *defined* as whatever number
 makes the model match the market. The more meaningful test is whether
 a **single** volatility, applied across every strike, can explain the
@@ -124,9 +124,7 @@ extra risk of large, sudden moves (earnings surprises, crashes) at
 strikes further from the current price, which shows up as a *higher*
 implied volatility the further out you go. This is one of the most
 famous real-world violations of the original 1973 Black-Scholes
-assumptions, and it's the reason real trading desks use a full
-volatility *surface* (a different vol per strike and expiry) rather
-than the model's single-sigma assumption.
+assumptions.
 
 ## Confirmation on a Second Chain: Short-Dated Options Amplify the Skew
 
@@ -150,7 +148,7 @@ wings, consistent with the pattern above.
 
 **Why the percentage errors are larger here than in the 25-day case:**
 with only 3 days to expiration, option prices are extremely sensitive
-to volatility assumptions in percentage terms — a small absolute
+to volatility assumptions in percentage terms. One small absolute
 mispricing on an option already worth only a few cents (like the
 $0.15 strike-150 call) becomes a very large percentage error. This
 confirms the skew isn't a one-off artifact of a single date or expiry:
@@ -167,9 +165,9 @@ pronounced, not less, the closer an option gets to expiration.
   symmetric or whether puts show a steeper skew than calls (common in
   equity markets, reflecting higher demand for downside protection).
 - **Extend the delta-hedging backtest across strikes with different
-  skew levels** — see whether hedging effectiveness holds up better or
+  skew levels** to see whether hedging effectiveness holds up better or
   worse for strikes where the single-vol assumption breaks down most.
-- **Track the skew across expirations** — plot implied vol vs. days to
+- **Track the skew across expirations** to plot implied vol vs. days to
   expiration for a fixed strike, to see how the term structure of
   volatility itself behaves, not just the strike-wise skew.
 
